@@ -140,6 +140,7 @@ module AWS
             response.timeout = true
           else
             response.body = http_response.response
+            p response.body
             response.status = http_response.response_header.status.to_i
             response.headers = http_response.response_header.to_hash
           end
