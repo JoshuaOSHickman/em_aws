@@ -27,6 +27,13 @@ module AWS
         # request.
         attr_reader :default_request_options
              
+        @@pools = {}
+        def self.fetch_connection(url,pool_size)
+          @@pools[url] ||= EventMachine::Synchrony::ConnectionPool.new(size: pool_size) do
+            EM::HttpRequest.new(url)
+          end
+          @@pools[url]
+        end
         # Constructs a new HTTP handler using EM-Synchrony.
         #
         # @param [Hash] options Default options to send to EM-Synchrony on
@@ -38,6 +45,7 @@ module AWS
         # {AWS::Configuration} instead.
         # Defaults pool_size to 5
         def initialize options = {}
+          options[:pool_size] ||= 5
           #puts "Using EM-Synchrony for AWS requests"
           @default_request_options = options
         end
@@ -45,11 +53,15 @@ module AWS
         def fetch_url(request)
           url = nil
           if request.use_ssl?
-            url = "https://#{request.host}:443#{request.uri}"
+            url = "https://#{request.host}:443"
           else
-            url = "http://#{request.host}#{request.uri}"
+            url = "http://#{request.host}"
           end
           url
+        end
+        # Add thread safety.
+        def _fibered_mutex
+          @fibered_mutex ||= EM::Synchrony::Thread::Mutex.new
         end
                    
         def fetch_headers(request)
@@ -89,12 +101,14 @@ module AWS
         end
         
         def fetch_response(url,method,opts={})
-          return EM::HttpRequest.new("#{url}").send(method, opts)     
+          self.class.fetch_connection(url,@default_request_options[:pool_size]).send(method, opts)   
         end
     
         def handle(request,response)
           if EM::reactor_running? 
-            handle_it(request, response)    
+            _fibered_mutex.synchronize do
+              handle_it(request, response)
+            end
           else
             EM.synchrony do
               handle_it(request, response)
@@ -108,7 +122,9 @@ module AWS
           # get, post, put, delete, head
           method = request.http_method.downcase.to_sym
           
-          opts = default_request_options.merge(request_options(request))
+          opts = default_request_options.merge({
+            :path => request.uri, # might only be needed for S3, docs are unclear
+          }).merge(request_options(request))
           
           if (method == :get)
             opts[:query] = request.body
