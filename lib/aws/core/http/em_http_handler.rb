@@ -29,7 +29,8 @@ module AWS
              
         @@pools = {}
         def self.fetch_connection(url,pool_size)
-          @@pools[url] ||= EventMachine::Synchrony::ConnectionPool.new(size: pool_size) do
+          #@@pools[url] ||= 
+          EventMachine::Synchrony::ConnectionPool.new(size: pool_size) do
             EM::HttpRequest.new(url)
           end
         end
