@@ -59,10 +59,6 @@ module AWS
           end
           url
         end
-        # Add thread safety.
-        def _fibered_mutex
-          @fibered_mutex ||= EM::Synchrony::Thread::Mutex.new
-        end
                    
         def fetch_headers(request)
           # Net::HTTP adds this header for us when the body is
@@ -106,9 +102,7 @@ module AWS
     
         def handle(request,response)
           if EM::reactor_running? 
-            _fibered_mutex.synchronize do
-              handle_it(request, response)
-            end
+            handle_it(request, response)
           else
             EM.synchrony do
               handle_it(request, response)
