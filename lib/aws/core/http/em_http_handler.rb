@@ -101,14 +101,14 @@ module AWS
         end
     
         def handle(request,response)
-          if EM::reactor_running? 
+          #if EM::reactor_running? 
             handle_it(request, response)
-          else
-            EM.synchrony do
-              handle_it(request, response)
-              EM.stop
-            end
-          end
+          #else
+          #  EM.synchrony do
+          #    handle_it(request, response)
+          #    EM.stop
+          #  end
+          #end
         end
                 
         def handle_it(request, response)
