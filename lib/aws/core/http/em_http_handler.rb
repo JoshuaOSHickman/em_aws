@@ -102,20 +102,13 @@ module AWS
         end
     
         def handle(request,response)
-          #if EM::reactor_running? 
-            handle_it(request, response)
-          #else
-          #  EM.synchrony do
-          #    handle_it(request, response)
-          #    EM.stop
-          #  end
-          #end
+          handle_it(request, response)
         end
                 
         def handle_it(request, response)
-          #puts "Using EM!!!!"
           # get, post, put, delete, head
           method = request.http_method.downcase.to_sym
+          raise "No Such Method" unless [:get, :post, :put, :delete, :head].member?(method)
           
           opts = request_options(request)# default_request_options.merge({
             #:path => request.uri, # might only be needed for S3, docs are unclear
