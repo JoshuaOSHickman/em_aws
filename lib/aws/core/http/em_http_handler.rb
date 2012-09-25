@@ -123,7 +123,7 @@ module AWS
           method = request.http_method.downcase.to_sym
           
           opts = default_request_options.merge({
-            :path => request.uri, # might only be needed for S3, docs are unclear
+            #:path => request.uri, # might only be needed for S3, docs are unclear
           }).merge(request_options(request))
           
           if (method == :get)
