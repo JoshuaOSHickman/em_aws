@@ -137,6 +137,7 @@ module AWS
           begin
             http_response = fetch_response(url,method,opts)         
           rescue Timeout::Error, Errno::ETIMEDOUT => e
+            raise "Timing out but error is buried"
             response.timeout = true
           else
             response.body = http_response.response
