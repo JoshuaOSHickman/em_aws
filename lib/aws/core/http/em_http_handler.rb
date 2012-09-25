@@ -96,8 +96,8 @@ module AWS
         end
         
         def fetch_response(url,method,opts={})
-          self.class.fetch_connection(url,@default_request_options[:pool_size]).execute(false) do
-            send(method, opts)   
+          self.class.fetch_connection(url,@default_request_options[:pool_size]).execute(false) do |client|
+            client.send(method, opts)   
           end
         end
     
