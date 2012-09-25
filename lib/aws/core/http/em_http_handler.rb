@@ -32,7 +32,6 @@ module AWS
           @@pools[url] ||= EventMachine::Synchrony::ConnectionPool.new(size: pool_size) do
             EM::HttpRequest.new(url)
           end
-          @@pools[url]
         end
         # Constructs a new HTTP handler using EM-Synchrony.
         #
@@ -97,7 +96,9 @@ module AWS
         end
         
         def fetch_response(url,method,opts={})
-          self.class.fetch_connection(url,@default_request_options[:pool_size]).send(method, opts)   
+          self.class.fetch_connection(url,@default_request_options[:pool_size]).execute(false) do
+            send(method, opts)   
+          end
         end
     
         def handle(request,response)
