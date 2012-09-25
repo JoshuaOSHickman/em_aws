@@ -122,9 +122,9 @@ module AWS
           # get, post, put, delete, head
           method = request.http_method.downcase.to_sym
           
-          opts = default_request_options.merge({
+          opts = request_options(request)# default_request_options.merge({
             #:path => request.uri, # might only be needed for S3, docs are unclear
-          }).merge(request_options(request))
+          #}).merge(request_options(request))
           
           if (method == :get)
             opts[:query] = request.body
@@ -153,6 +153,6 @@ module AWS
   # previous default handler to remain accessible from its old namesapce
   # @private
   module Http
-    class EMHttpHandler < Core::Http::EMHttpHandler; end
+    EMHttpHandler = Core::Http::EMHttpHandler
   end
 end
